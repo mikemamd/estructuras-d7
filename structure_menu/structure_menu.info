@@ -1,0 +1,5 @@
+name = Hook Menú.
+description = Módulo de estructura básica de Hook Menú.
+package = 'Estructuras | Drupal 7'
+version = 1.0.0.0
+core = 7.x

@@ -29,7 +29,7 @@ function structurePath_permission() {
 function structurePath_menu() {
   $items = [];
 
-  /* Se genera una URl base y/o rutas especificas */
+  /* Se genera una URL base y/o rutas especificas */
   $items['estructuras-d7'] = array(
     'title'            => 'Estructuras Drupal 7',
     'description'      => 'Página principal de Estructuras D7',
@@ -89,7 +89,8 @@ function structurePath_args($uid, $u_foo) {
 }
 
 /**
- * @info Define empty page
+ * Callback de función para página en blanco
+ * Puede sustituirese o implementarse otro método/hook
  * @return ($foo)
  * @see structurePath_menu()
 */

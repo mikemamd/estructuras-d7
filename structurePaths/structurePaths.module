@@ -1,0 +1,99 @@
+<?php
+/**
+ * @File Redesign "Oficina Móvil"
+ * @author Miguel Martínez <miguel01amd@gmail.com>
+ * @package Estructuras | Drupal 7
+ * @info Este module contiene diferentes métodos básicos para declarar rutas a hook_menu
+ * @vertion dev 1.0.0.0
+ */
+
+/**
+ * Define los permisos para visualizar el contenido
+ * Estos permisos deberán ser activados en /admin/people/permissions
+ * Implements hook_permission().
+ * @return array (permisions)
+ */
+function structurePath_permission() {
+  return array(
+    'estructuras d7' => array(
+      'title' => 'Permiso general para acceso a contenido',
+    ),
+  );
+}
+
+/**
+ * Declara las URLS para que Drupal las indexe
+ * Implements hook_menu().
+ * @return array (paths)
+ */
+function structurePath_menu() {
+  $items = [];
+
+  /* Se genera una URl base y/o rutas especificas */
+  $items['estructuras-d7'] = array(
+    'title'            => 'Estructuras Drupal 7',
+    'description'      => 'Página principal de Estructuras D7',
+    'page callback'    => 'structurePath_page_empty',
+    'access arguments' => array('estructuras d7'),
+  );
+  $items['estructuras-d7/primer-estructura'] = array(
+    'title'            => 'Primer estructura D7',
+    'description'      => 'Primer estructura Estructuras D7',
+    'page callback'    => 'structurePath_page_empty',
+    'access arguments' => array('estructuras d7'),
+  );
+
+  /* Se genera una URL dinámica en su 2do argumento [posición 1] */
+  $items['estructura-dinamica/%'] = array(
+    'title'            => 'Estructuras Drupal 7',
+    'description'      => 'Página principal de Estructuras D7',
+    'page callback'    => 'structurePath_page_empty',
+    'access arguments' => array('estructuras d7'),
+  );
+
+  /* Se genera una URL para pasar los argumentos por la ruta [posición 1|2] */
+  $items['estructura-args/%/%'] = array(
+    'title'            => 'Estructuras Drupal 7',
+    'description'      => 'Página principal de Estructuras D7',
+    'page callback'    => 'structurePath_args',
+    'page arguments'   => array(1,2),
+    'access callback'  => TRUE,
+    'access arguments' => array('estructuras d7'),
+  );
+
+  /* Se genera una URL en un panel de administración */
+  $items['admin/config/estructura-d7/config'] = array(
+    'title'            => 'Configuración | General',
+    'description'      => 'Configuración de módulo de estructura D7',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('structurePath_admin'), // función de admin
+    'access arguments' => array('estructuras d7'),
+    'file'             => 'structurePath.admin.inc', // .inc con función de admin
+  );
+
+  return $items;
+}
+
+/**
+ * Callback de función para recibir argumentos vía URl
+ * @param int ($uid, $u_foo)
+ *   $uid   => User ID
+ *   $u_foo => User variable
+ * @return ($foo)
+ * @see structurePath_menu()
+*/
+function structurePath_args($uid, $u_foo) {
+  /* Se usan los argumentos para cualquier operación */
+  $foo = $uid + $u_foo;
+  return $foo;
+}
+
+/**
+ * @info Define empty page
+ * @return ($foo)
+ * @see structurePath_menu()
+*/
+function structurePath_page_empty() {
+  $foo = "Hola Mundo"
+  return $foo;
+}

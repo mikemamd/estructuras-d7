@@ -1,6 +1,6 @@
 <?php
 /**
- * @File Redesign "Oficina Móvil"
+ * @file Hook Menú
  * @author Miguel Martínez <miguel01amd@gmail.com>
  * @package Estructuras | Drupal 7
  * @info Este module contiene diferentes métodos básicos para declarar rutas a hook_menu
@@ -67,7 +67,7 @@ function structurePath_menu() {
     'description'      => 'Configuración de módulo de estructura D7',
     'page callback'    => 'drupal_get_form',
     'page arguments'   => array('structurePath_admin'), // función de admin
-    'access arguments' => array('estructuras d7'),
+    'access arguments' => array('estructuras d7'), // Este permiso se puede cambiar para restringir acceso
     'file'             => 'structurePath.admin.inc', // .inc con función de admin
   );
 

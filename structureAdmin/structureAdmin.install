@@ -1,0 +1,21 @@
+<?php
+/**
+ * @file
+ * Genera entidades y variables al instalar module
+ * Destruye entidades y variables al desinstalar el module
+ * @tmpvariables
+ */
+
+
+/**
+ * Destruye las variables temporales de admin panel
+ * Implements hook_uninstall().
+ * @tmpvariables
+ */
+function structureAdmin_uninstall() {
+  /* DELETE ADMIN VARIABLES */
+  variable_del('banner_title','');
+  variable_del('banner_body','');
+
+  field_purge_batch(1000);
+}

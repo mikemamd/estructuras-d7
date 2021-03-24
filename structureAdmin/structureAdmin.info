@@ -1,0 +1,5 @@
+name = Estructure Admin Page.
+description = Módulo de estructura básica de página administrativa.
+package = 'Estructuras | Drupal 7'
+version = 1.0.0.0
+core = 7.x

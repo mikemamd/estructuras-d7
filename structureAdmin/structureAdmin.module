@@ -1,0 +1,43 @@
+<?php
+/**
+ * @file Estructure Admin Page
+ * @author Miguel Martínez <miguel01amd@gmail.com>
+ * @package Estructuras | Drupal 7
+ * @info Este module contiene diferentes métodos básicos para declarar rutas a hook_menu
+ * @vertion dev 1.0.0.0
+ */
+
+/**
+ * Define los permisos para visualizar el contenido
+ * Estos permisos deberán ser activados en /admin/people/permissions
+ * Implements hook_permission().
+ * @return array (permisions)
+ */
+function structureAdmin_permission() {
+  return array(
+    'estructuras admin' => array(
+      'title' => 'Permiso para acceder a página administrativa',
+    ),
+  );
+}
+
+/**
+ * Declara las URLS para que Drupal las indexe
+ * Implements hook_menu().
+ * @return array (paths)
+ */
+function structureAdmin_menu() {
+  $items = [];
+
+  /* Se genera una URL en un panel de administración */
+  $items['admin/config/estructura-d7/config'] = array(
+    'title'            => 'Configuración | General',
+    'description'      => 'Configuración de módulo de estructura D7',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('structurePath_admin'), // función de admin
+    'access arguments' => array('estructuras d7'),
+    'file'             => 'structurePath.admin.inc', // .inc con función de admin
+  );
+
+  return $items;
+}

@@ -33,7 +33,7 @@ function structureBlocks_menu() {
   $items['estructuras-d7'] = array(
     'title'            => 'Estructuras Drupal 7',
     'description'      => 'Página principal de Estructuras D7',
-    'page callback'    => 'structurePath_page_empty',
+    'page callback'    => 'structureBlocks_page_empty',
     'access arguments' => array('estructuras d7'),
   );
 
@@ -46,7 +46,85 @@ function structureBlocks_menu() {
  * @return ($foo)
  * @see structureBlocks_menu()
 */
-function structurePath_page_empty() {
-  $foo = "Hola Mundo"
-  return $foo;
+function structureBlocks_page_empty() {
+  return '';
+}
+
+/**
+ * Activa los bloques y los indexa en drupal
+ * Implements hook_block_info().
+ * @blocks
+ *   home_header
+ */
+function structureBlocks_block_info() {
+  $blocks = [];
+  $blocks['home_header'] = array(
+    'info'       => 'Home | Header', // Título del bloque en CMS
+    'status'     => TRUE,
+    'region'     => 'content', // Región de Drupal donde se mostrará
+    'cache'      => DRUPAL_NO_CACHE,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages'      => 'estructuras-d7', // Se puede hacer uso de wildcard (/%)
+    'weight'     => 1, // Posición en que se mostrará
+  );
+
+  return $blocks;
+}
+
+/*
+ * Implements hook_block_view().
+ * @params array ($delta)
+ *  $delta será un arreglo con machine name
+ *  del module dentro del CMS
+ */
+function structureBlocks_block_view($delta = '') {
+  $block = [];
+
+  switch ($delta) {
+    case 'home_header':
+        $block['content'] = structureBlocks_banner();
+      break;
+    /*
+    case 'home_example1':
+        $block['content'] = structureBlocks_exaple1();
+      break;
+    case 'home_example2':
+        $block['content'] = structureBlocks_exaple2();
+      break;
+    case 'home_example3':
+        $block['content'] = structureBlocks_exaple3();
+      break;
+    */
+  }
+
+  return $block;
+}
+
+/*
+ * Asigna un .tpl especifico para el despliegue del bloque
+ * Implements hook_theme().
+ */
+function structureBlocks_theme() {
+  $theme = [];
+  $theme['home_header'] = [ 'template' => 'templates/block-header' ];
+  /*
+  $theme['home_example1'] = [ 'template' => 'templates/home_example1' ];
+  $theme['home_example2'] = [ 'template' => 'templates/home_example2' ];
+  $theme['home_example2'] = [ 'template' => 'templates/home_example3' ];
+  */
+  return $theme;
+}
+
+/**
+ * Callback para desplegar contenido en bloque [home_header]
+ * @return theme array ($content)
+ * @see structureBlocks_block_view
+ */
+function structureBlocks_banner() {
+  $content = [
+    'title' => 'Estructuras Drupal 7 - Bloques',
+    'body'  => 'Bloque creado a partir de custom module',
+  ];
+
+  return theme('home_header', array('content' => $content));
 }

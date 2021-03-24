@@ -3,7 +3,7 @@
  * @file Hook Block
  * @author Miguel Martínez <miguel01amd@gmail.com>
  * @package Estructuras | Drupal 7
- * @info Este module muestra la estructura básica para construir un bloque y desplegarlo
+ * @info Este module muestra la estructura básica para consultar nodos previamente intalados
  * @vertion dev 1.0.0.0
  */
 
@@ -13,7 +13,7 @@
  * Implements hook_permission().
  * @return array (permisions)
  */
-function structureBlocks_permission() {
+function structureContent_permission() {
   return array(
     'estructuras d7' => array(
       'title' => 'Permiso general para acceso a contenido',
@@ -26,7 +26,7 @@ function structureBlocks_permission() {
  * Implements hook_menu().
  * @return array (paths)
  */
-function structureBlocks_menu() {
+function structureContent_menu() {
   $items = [];
 
   /* Se genera una URL base y/o rutas especificas */
@@ -46,7 +46,7 @@ function structureBlocks_menu() {
  * @return ($foo)
  * @see structureBlocks_menu()
 */
-function structureBlocks_page_empty() {
+function structureContent_page_empty() {
   return '';
 }
 
@@ -56,16 +56,16 @@ function structureBlocks_page_empty() {
  * @blocks
  *   home_header
  */
-function structureBlocks_block_info() {
+function structureContent_block_info() {
   $blocks = [];
-  $blocks['home_header'] = array(
+  $blocks['home_blog'] = array(
     'info'       => 'Home | Header', // Título del bloque en CMS
     'status'     => TRUE,
     'region'     => 'content', // Región de Drupal donde se mostrará
     'cache'      => DRUPAL_NO_CACHE,
     'visibility' => BLOCK_VISIBILITY_LISTED,
     'pages'      => 'estructuras-d7', // Se puede hacer uso de wildcard (/%)
-    'weight'     => 1, // Posición en que se mostrará
+    'weight'     => 2, // Posición en que se mostrará
   );
 
   return $blocks;
@@ -77,11 +77,11 @@ function structureBlocks_block_info() {
  *  $delta será un arreglo con machine name
  *  del module dentro del CMS
  */
-function structureBlocks_block_view($delta = '') {
+function structureContent_block_view($delta = '') {
   $block = [];
 
   switch ($delta) {
-    case 'home_header':
+    case 'home_blog':
         $block['content'] = structureBlocks_banner();
       break;
     /*
@@ -104,9 +104,9 @@ function structureBlocks_block_view($delta = '') {
  * Asigna un .tpl especifico para el despliegue del bloque
  * Implements hook_theme().
  */
-function structureBlocks_theme() {
+function structureContent_theme() {
   $theme = [];
-  $theme['home_header'] = [ 'template' => 'templates/block-header' ];
+  $theme['home_blog'] = [ 'template' => 'templates/block-blog' ];
   /*
   $theme['home_example1'] = [ 'template' => 'templates/home_example1' ];
   $theme['home_example2'] = [ 'template' => 'templates/home_example2' ];
@@ -116,15 +116,52 @@ function structureBlocks_theme() {
 }
 
 /**
- * Callback para desplegar contenido en bloque [home_header]
+ * Callback para desplegar contenido en bloque [home_blog]
  * @return theme array ($content)
  * @see structureBlocks_block_view
  */
 function structureBlocks_banner() {
-  $content = [
-    'title' => 'Estructuras Drupal 7 - Bloques',
-    'body'  => 'Bloque creado a partir de custom module',
-  ];
+  $content = [];
 
-  return theme('home_header', array('content' => $content));
+  $qry = db_select('node', 'n');
+  $qry->leftJoin('field_data_body', 'body', 'body.entity_id = n.nid');
+  $qry->leftJoin('field_data_field_imgblog', 'img', 'img.entity_id = n.nid');
+  $qry->condition('n.type', 'blog_content');
+  $qry->condition('n.status', 1);
+  $qry->fields('n', ['nid', 'title'])
+      ->fields('body', ['body_value'])
+      ->fields('img', ['field_imgblog_fid']);
+  $qry->orderBy('n.changed', 'ASC');
+  $results = $qry->execute()->fetchAll();
+
+  if ( !empty($results) ) {
+    // Se recorre arreglo con resultados de la consulta
+    foreach ($results as $node) {
+      // Se ordena array con el contenido
+      $content[$node->nid] = [
+        'title' => $node->title,
+        'desc'  => $node->body_value,
+        'img'   => structureBlock_getimg($node->field_imgblog_fid),
+      ];
+    } // endforeach
+  }// endif
+
+  return theme('home_blog', array('content' => $content));
+}
+
+/**
+ * Construye la URL de la imagen
+ * @param null $fid (fid de la imagen)
+ * @return string ($ulr)
+ */
+function bem_common_getimg($fid = NULL) {
+  $url = '';
+  if ($fid) {
+    // Get url from image
+    $file = file_load($fid);
+    $uri  = $file->uri;
+    $url  = file_create_url($uri);
+  } // end if
+
+  return $url;
 }

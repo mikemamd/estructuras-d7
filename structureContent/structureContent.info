@@ -1,0 +1,5 @@
+name = Content Types.
+description = Módulo de estructura básica para la creación de Content Types.
+package = 'Estructuras | Drupal 7'
+version = 1.0.0.0
+core = 7.x

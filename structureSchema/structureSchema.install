@@ -1,0 +1,22 @@
+<?php
+/**
+ * Instalador de Tabla Custom
+ * Implements hook_schema().
+ * @table
+ *   node_category => Taxonomia para la clasificación de nodos
+ *   test_category => Taxonomia de prueba
+ */
+function structureSchema_schema(){
+}
+
+/**
+ * Fución para remover taxonomias después de desinstalar módulo
+ * Implements hook_uninstall().
+ * @taxonomy
+ *   node_category
+ *   test_category
+ */
+function structureSchema_uninstall() {
+  // Limpia caches para desindexar lo necesario
+  field_purge_batch(1000);
+}

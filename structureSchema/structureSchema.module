@@ -1,0 +1,51 @@
+<?php
+/**
+ * @file Estructura creación de Custom Table
+ * @author Miguel Martínez <miguel01amd@gmail.com>
+ * @package Estructuras | Drupal 7
+ * @info Este module muestra la estructura básica
+ * @vertion dev 1.0.0.0
+ */
+
+/**
+ * Define los permisos para visualizar el contenido
+ * Estos permisos deberán ser activados en /admin/people/permissions
+ * Implements hook_permission().
+ * @return array (permisions)
+ */
+function structureSchema_permission() {
+  return array(
+    'estructuras d7' => array(
+      'title' => 'Permiso general para acceso a contenido',
+    ),
+  );
+}
+
+/**
+ * Declara las URLS para que Drupal las indexe
+ * Implements hook_menu().
+ * @return array (paths)
+ */
+function structureSchema_menu() {
+  $items = [];
+
+  /* Se genera una URL base y/o rutas especificas */
+  $items['estructuras-d7'] = array(
+    'title'            => 'Estructuras Drupal 7',
+    'description'      => 'Página principal de Estructuras D7',
+    'page callback'    => 'structureBlocks_page_empty',
+    'access arguments' => array('estructuras d7'),
+  );
+
+  return $items;
+}
+
+/**
+ * Callback de función para página en blanco
+ * Puede sustituirese o implementarse otro método/hook
+ * @return ($foo)
+ * @see structureSchema_menu()
+*/
+function structureSchema_page_empty() {
+  return '';
+}

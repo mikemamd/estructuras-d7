@@ -154,7 +154,7 @@ function structureBlocks_banner() {
  * @param null $fid (fid de la imagen)
  * @return string ($ulr)
  */
-function bem_common_getimg($fid = NULL) {
+function structureBlock_getimg($fid = NULL) {
   $url = '';
   if ($fid) {
     // Get url from image

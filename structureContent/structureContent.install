@@ -35,6 +35,28 @@ function structureContent_install(){
 
   // Se limpian los caches de las instancias de fields
   field_info_cache_clear();
+  // Se construye arreglo con fields a crear
+  $fields = [
+    'imagen_foot' => array(
+      'field_name' => 'field_imgblog',
+      'type'       => 'image'
+    ),
+    /*
+    'position' => [
+      'field_name' => 'field_uformat',
+      'type'       => 'list_integer'
+    ],
+    */
+
+  ];
+ // Se recorre arreglo para crear fields
+  foreach($fields as $field) {
+    if( !field_info_field($field['field_name']) ){
+      field_create_field($field);
+    }//end if
+  }//end foreach
+
+
 
   // Se crean las instancias por tipo de contenido
   $entities = array(

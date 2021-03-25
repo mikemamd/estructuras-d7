@@ -1,12 +1,12 @@
 <?php
 /**
- * Instalador de tipos de contenido y sus instancias
+ * Instalador de vocabularios y taxonomias
  * Implements hook_install().
- * @contenttypes
- *   blog_content => Contenido para entradas de blog
- *   test_content => Contenido de test en módulo
+ * @taxonomies
+ *   node_category => Taxonomia para la clasificación de nodos
+ *   test_category => Taxonomia de prueba
  */
-function structureContent_install(){
+function structureTaxonomy_install(){
   // Se declaran los Content Types
   $content_types = array(
     'blog_content' => array(
@@ -98,7 +98,7 @@ function structureContent_install(){
  *   blog_content
  *   test_content
  */
-function structureContent_uninstall() {
+function structureTaxonomy_uninstall() {
   $nids = [];
 
   /* Consulta todos los nodos creados de los tipos de contenido a eliminar */

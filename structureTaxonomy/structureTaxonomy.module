@@ -1,9 +1,9 @@
 <?php
 /**
- * @file Hook Block
+ * @file Estructura de Taxonomias
  * @author Miguel Martínez <miguel01amd@gmail.com>
  * @package Estructuras | Drupal 7
- * @info Este module muestra la estructura básica para consultar nodos previamente intalados
+ * @info Este module muestra la estructura básica
  * @vertion dev 1.0.0.0
  */
 
@@ -13,7 +13,7 @@
  * Implements hook_permission().
  * @return array (permisions)
  */
-function structureContent_permission() {
+function structureTaxonomy_permission() {
   return array(
     'estructuras d7' => array(
       'title' => 'Permiso general para acceso a contenido',
@@ -26,7 +26,7 @@ function structureContent_permission() {
  * Implements hook_menu().
  * @return array (paths)
  */
-function structureContent_menu() {
+function structureTaxonomy_menu() {
   $items = [];
 
   /* Se genera una URL base y/o rutas especificas */
@@ -44,124 +44,8 @@ function structureContent_menu() {
  * Callback de función para página en blanco
  * Puede sustituirese o implementarse otro método/hook
  * @return ($foo)
- * @see structureBlocks_menu()
+ * @see structureTaxonomy_menu()
 */
-function structureContent_page_empty() {
+function structureTaxonomy_page_empty() {
   return '';
-}
-
-/**
- * Activa los bloques y los indexa en drupal
- * Implements hook_block_info().
- * @blocks
- *   home_header
- */
-function structureContent_block_info() {
-  $blocks = [];
-  $blocks['home_blog'] = array(
-    'info'       => 'Home | Header', // Título del bloque en CMS
-    'status'     => TRUE,
-    'region'     => 'content', // Región de Drupal donde se mostrará
-    'cache'      => DRUPAL_NO_CACHE,
-    'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages'      => 'estructuras-d7', // Se puede hacer uso de wildcard (/%)
-    'weight'     => 2, // Posición en que se mostrará
-  );
-
-  return $blocks;
-}
-
-/*
- * Implements hook_block_view().
- * @params array ($delta)
- *  $delta será un arreglo con machine name
- *  del module dentro del CMS
- */
-function structureContent_block_view($delta = '') {
-  $block = [];
-
-  switch ($delta) {
-    case 'home_blog':
-        $block['content'] = structureBlocks_banner();
-      break;
-    /*
-    case 'home_example1':
-        $block['content'] = structureBlocks_exaple1();
-      break;
-    case 'home_example2':
-        $block['content'] = structureBlocks_exaple2();
-      break;
-    case 'home_example3':
-        $block['content'] = structureBlocks_exaple3();
-      break;
-    */
-  }
-
-  return $block;
-}
-
-/*
- * Asigna un .tpl especifico para el despliegue del bloque
- * Implements hook_theme().
- */
-function structureContent_theme() {
-  $theme = [];
-  $theme['home_blog'] = [ 'template' => 'templates/block-blog' ];
-  /*
-  $theme['home_example1'] = [ 'template' => 'templates/home_example1' ];
-  $theme['home_example2'] = [ 'template' => 'templates/home_example2' ];
-  $theme['home_example2'] = [ 'template' => 'templates/home_example3' ];
-  */
-  return $theme;
-}
-
-/**
- * Callback para desplegar contenido en bloque [home_blog]
- * @return theme array ($content)
- * @see structureBlocks_block_view
- */
-function structureBlocks_banner() {
-  $content = [];
-
-  $qry = db_select('node', 'n');
-  $qry->leftJoin('field_data_body', 'body', 'body.entity_id = n.nid');
-  $qry->leftJoin('field_data_field_imgblog', 'img', 'img.entity_id = n.nid');
-  $qry->condition('n.type', 'blog_content');
-  $qry->condition('n.status', 1);
-  $qry->fields('n', ['nid', 'title'])
-      ->fields('body', ['body_value'])
-      ->fields('img', ['field_imgblog_fid']);
-  $qry->orderBy('n.changed', 'ASC');
-  $results = $qry->execute()->fetchAll();
-
-  if ( !empty($results) ) {
-    // Se recorre arreglo con resultados de la consulta
-    foreach ($results as $node) {
-      // Se ordena array con el contenido
-      $content[$node->nid] = [
-        'title' => $node->title,
-        'desc'  => $node->body_value,
-        'img'   => structureBlock_getimg($node->field_imgblog_fid),
-      ];
-    } // endforeach
-  }// endif
-
-  return theme('home_blog', array('content' => $content));
-}
-
-/**
- * Construye la URL de la imagen
- * @param null $fid (fid de la imagen)
- * @return string ($ulr)
- */
-function bem_common_getimg($fid = NULL) {
-  $url = '';
-  if ($fid) {
-    // Get url from image
-    $file = file_load($fid);
-    $uri  = $file->uri;
-    $url  = file_create_url($uri);
-  } // end if
-
-  return $url;
 }

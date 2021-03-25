@@ -7,125 +7,76 @@
  *   test_category => Taxonomia de prueba
  */
 function structureTaxonomy_install(){
-  // Se declaran los Content Types
-  $content_types = array(
-    'blog_content' => array(
-      'type'          => 'blog_content', // machine name
-      'name'          => 'Estructuras D7 | Blog', // nombre en CMS
-      'description'   => 'Use para cargar contenido en el blog',
-      'title_label'   => 'Título',
-      'base'          => 'node_content',
-      'custom'        => TRUE,
+  // Se forma arreglo con taxonomias
+  $vocabularies_comp = array(
+    'node_category' => (object) array(
+      'name'         => 'Categorias de Nodos',
+      'machine_name' => 'node_category',
+      'description'  => 'Categorías para los nodos del sitio',
+      'module'       => 'structureTaxonomy',
     ),
-    'test_content' => array(
-      'type'          => 'test_content',
-      'name'          => 'Estructuras D7 | Test',
-      'description'   => 'Use para cargar contenido de prueba',
-      'title_label'   => 'Título',
-      'base'          => 'node_content',
-      'custom'        => TRUE,
+    'test_category' => (object) array(
+      'name'         => 'Taxonomía de pruebas',
+      'machine_name' => 'test_category',
+      'description'  => 'Taxonomía de pruebas para agregar fields',
+      'module'       => 'structureTaxonomy',
     ),
-  );//end content_types
-
-  // Mediante API de Drupal se crean los tipos de contenido
-  foreach($content_types as $key => $content){
-    $node_type = node_type_set_defaults($content);
-    node_type_save($node_type);
-  }//end foreach
-
-  // Se limpian los caches de las instancias de fields
-  field_info_cache_clear();
-
-  // Se crean las instancias por tipo de contenido
-  $entities = array(
-    // Instances to content type
-    'blog_content' => array(
-      'Description' => array(
-        'entity_type' => 'node',
-        'field_name'  => 'body',
-        'label'       => 'Body',
-        'description' => 'Descripción del contenido',
-        'required'    => TRUE,
-        'widget'      => array(
-          'type' => 'text_textarea_with_summary'
-        ),
-      ),
-      'Imagen de Pie' => array(
-        'entity_type' => 'node',
-        'field_name'  => 'field_imgblog',
-        'label'       => 'Imagen',
-        'description' => 'Imagen para pie de entrada',
-        'required'    => TRUE,
-        'settings'    => array(
-          'file_directory'  => 'field/image',
-          'file_extensions' => 'png gif jpg jpeg',
-          'max_filesize'    => '',
-          'max_resolution'  => '',
-          'min_resolution'  => '',
-          'alt_field'       => FALSE,
-          'title_field'     => '',
-        ),
-      ),
-    ), // End [blog_content]
-    'test_content' => array(
-      'Description' => array(
-        'entity_type' => 'node',
-        'field_name'  => 'body',
-        'label'       => 'Body',
-        'description' => 'Descripción del contenido',
-        'required'    => TRUE,
-        'widget'      => array(
-          'type' => 'text_textarea_with_summary'
-        ),
-      ),
-    ), // End [test_content]
   );
+  // Se itera el arreglo y se crean las taxonomías
+  foreach($vocabularies_comp as $vocabulary){
+    taxonomy_vocabulary_save($vocabulary);
+  }
 
-  // Se crean las instacias y se añaden a sus tipos de contenido
-  foreach ($entities as $entity => $instances) {
-    foreach ($instances as $instance) {
-      $instance['bundle'] = $entity;
-      field_create_instance($instance);
+  //Se introducen términos default para taxonomias
+  $terms = [
+    'node_category' => [
+      'Artículos',
+      'Blogs',
+      'Dev'
+      'Videos',
+      'Offtopic',
+    ],
+    'test_category' => [
+      'Categoria 1',
+      'Categoria 2',
+      'Categoria 3',
+      'Categoria 4',
+    ],
+  ];
+  // Se recorre lista de terminos y se agregan a su vocabulario
+  foreach($terms as $voc => $term){
+    $vid = taxonomy_vocabulary_machine_name_load($voc)->vid;
+    $i   = 0;
+    foreach ($term as $name) {
+      taxonomy_term_save((object)array(
+        'vid'    => $vid,
+        'name'   => $name,
+        'weight' => $i,
+      ));
+      ++$i;
     }//end foreach
   }//end foreach
 
 }
 
 /**
- * Fución para remover content types y nodos después de desinstalar módulo
+ * Fución para remover taxonomias después de desinstalar módulo
  * Implements hook_uninstall().
- * @content_types
- *   blog_content
- *   test_content
+ * @taxonomy
+ *   node_category
+ *   test_category
  */
 function structureTaxonomy_uninstall() {
-  $nids = [];
-
-  /* Consulta todos los nodos creados de los tipos de contenido a eliminar */
-  $qry = db_select('node', 'n');
-  $qry->condition(db_or()
-      ->condition('n.type', 'blog_content', '=')
-      ->condition('n.type', 'test_content', '='));
-  $qry->fields('n', ['nid']);
-  $qry->orderBy('n.created', 'ASC');
-  $results = $qry->execute()->fetchAll();
-
-  // Elimina los nodos resultantes
-  foreach ($results as $row) {
-    $nids[] = $row->nid;
-  }//end foreach
-  node_delete_multiple( $nids );
-
-  // Elimina los tipos de contenido y sus instancias
-  $contents = [ 'blog_content', 'test_content' ];
-  foreach($contents as $content){
-    foreach( field_info_instances('node', $content) as $field_name => $instance ) {
-      if(field_info_field($field_name)){
-        field_delete_instance($instance);
-      }//end if
-    }//end foreach
-    node_type_delete( (string) $content);
-  }//end foreach
+  // Se crea arreglo con machine names de vocabularios
+  $vocabularies_comp = [
+    'node_category',
+    'test_category',
+  ];
+  // Se recorre arreglo para destruir cada taxonomia con sus terminos
+  foreach ($vocabularies_comp as $vocs) {
+    $voc_id = taxonomy_vocabulary_machine_name_load($vocs);
+    taxonomy_vocabulary_delete($voc_id->vid);
+  }
 
   // Limpia caches para desindexar lo necesario
   field_purge_batch(1000);

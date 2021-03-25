@@ -47,16 +47,14 @@ function structureContent_install(){
       'type'       => 'list_integer'
     ],
     */
-
   ];
+  
  // Se recorre arreglo para crear fields
   foreach($fields as $field) {
     if( !field_info_field($field['field_name']) ){
       field_create_field($field);
     }//end if
   }//end foreach
-
-
 
   // Se crean las instancias por tipo de contenido
   $entities = array(

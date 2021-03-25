@@ -33,7 +33,7 @@ function structureSchema_menu() {
   $items['estructuras-d7'] = array(
     'title'            => 'Estructuras Drupal 7',
     'description'      => 'Página principal de Estructuras D7',
-    'page callback'    => 'structureBlocks_page_empty',
+    'page callback'    => 'structureSchema_page_empty',
     'access arguments' => array('estructuras d7'),
   );
 

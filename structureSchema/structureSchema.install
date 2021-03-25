@@ -3,20 +3,84 @@
  * Instalador de Tabla Custom
  * Implements hook_schema().
  * @table
- *   node_category => Taxonomia para la clasificación de nodos
- *   test_category => Taxonomia de prueba
+ *   secure_logs => Tabla test de logs de nodos eliminados
  */
 function structureSchema_schema(){
+  $schema['secure_logs'] = array(
+    'description' => 'Tabla de logs de nodos eliminados',
+    'fields' => array(
+      'secure_logs_id'   => array(
+            'type'        => 'serial',
+            'unsigned'    => TRUE,
+            'not null'    => TRUE,
+            'description' => 'ID del csv logs'
+          ),
+          'secure_logs_deleted' => array(
+            'type'        => 'int',
+            'not null'    => TRUE,
+            'default'     => '0',
+            'description' => 'Fecha en que el nodo fue eliminado',
+        ),
+          'secure_logs_nid' => array(
+            'type'        => 'int',
+            'not null'    => TRUE,
+            'default'     => '0',
+            'description' => 'NID del nodo eliminado',
+        ),
+      'secure_logs_name' => array(
+            'type'        => 'varchar',
+            'length'      => 255,
+            'not null'    => FALSE,
+            'description' => 'Nombre del nodo eliminado',
+        ),
+        'secure_logs_type' => array(
+            'type'        => 'varchar',
+            'length'      => 255,
+            'not null'    => FALSE,
+            'description' => 'Tipo del nodo eliminado',
+        ),
+        'secure_logs_content_type' => array(
+            'type'        => 'varchar',
+            'length'      => 255,
+            'not null'    => FALSE,
+            'description' => 'Tipo de contenido del nodo eliminado',
+        ),
+      'secure_logs_username' => array(
+            'type'        => 'varchar',
+            'length'      => 255,
+            'not null'    => FALSE,
+            'description' => 'Username del usuario que elimino el nodo',
+        ),
+      'secure_logs_email' => array(
+            'type'        => 'varchar',
+            'length'      => 255,
+            'not null'    => FALSE,
+            'description' => 'Email del usuario que elimino el nodo',
+        ),
+    ),
+    'primary key' => array('secure_logs_id'),
+  );
+  return $schema;
 }
 
 /**
- * Fución para remover taxonomias después de desinstalar módulo
+ * Fución para remover tabla custom después de desinstalar módulo
  * Implements hook_uninstall().
- * @taxonomy
- *   node_category
- *   test_category
+ * @table
+ *   secure_logs
  */
 function structureSchema_uninstall() {
+  // Delete the custom table
+  try {
+    // Delete on DB the table of assistence of simposiums
+    db_drop_table('secure_logs');
+    drupal_set_message(t('Se limpió correctamente la Base de Datos de Logs.'), 'status');
+  }
+  catch (Exception $e) {
+    watchdog("WATCHDOG_ERROR", t('Error al elimiar registro: '.$e));
+    drupal_set_message('Error uninstall secure_logs: '.$e, 'error');
+  } // endexception
+  
   // Limpia caches para desindexar lo necesario
   field_purge_batch(1000);
 }

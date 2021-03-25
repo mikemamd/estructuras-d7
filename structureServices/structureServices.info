@@ -1,0 +1,5 @@
+name = Estrucura de Services.
+description = Módulo de estructura básica para el consumo de servicios.
+package = 'Estructuras | Drupal 7'
+version = 1.0.0.0
+core = 7.x

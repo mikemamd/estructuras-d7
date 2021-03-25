@@ -1,0 +1,150 @@
+<?php
+/**
+ * @file Hook Block
+ * @author Miguel Martínez <miguel01amd@gmail.com>
+ * @package Estructuras | Drupal 7
+ * @info Este module muestra la estructura básica para consultar nodos previamente intalados
+ * @vertion dev 1.0.0.0
+ */
+
+/**
+ * Define los permisos para visualizar el contenido
+ * Estos permisos deberán ser activados en /admin/people/permissions
+ * Implements hook_permission().
+ * @return array (permisions)
+ */
+function structureServices_permission() {
+  return array(
+    'estructuras d7' => array(
+      'title' => 'Permiso general para acceso a contenido',
+    ),
+  );
+}
+
+/**
+ * Declara las URLS para que Drupal las indexe
+ * Implements hook_menu().
+ * @return array (paths)
+ */
+function structureServices_menu() {
+  $items = [];
+
+  /* Se genera una URL base y/o rutas especificas */
+  $items['estructuras-d7'] = array(
+    'title'            => 'Estructuras Drupal 7',
+    'description'      => 'Página principal de Estructuras D7',
+    'page callback'    => 'structureBlocks_page_empty',
+    'access arguments' => array('estructuras d7'),
+  );
+
+  return $items;
+}
+
+/**
+ * Callback de función para página en blanco
+ * Puede sustituirese o implementarse otro método/hook
+ * @return ($foo)
+ * @see structureBlocks_menu()
+*/
+function structureServices_page_empty() {
+  return '';
+}
+
+/**
+ * Activa los bloques y los indexa en drupal
+ * Implements hook_block_info().
+ * @blocks
+ *   home_header
+ */
+function structureServices_block_info() {
+  $blocks = [];
+  $blocks['home_blog'] = array(
+    'info'       => 'Home | Header', // Título del bloque en CMS
+    'status'     => TRUE,
+    'region'     => 'content', // Región de Drupal donde se mostrará
+    'cache'      => DRUPAL_NO_CACHE,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages'      => 'estructuras-d7', // Se puede hacer uso de wildcard (/%)
+    'weight'     => 2, // Posición en que se mostrará
+  );
+
+  return $blocks;
+}
+
+/*
+ * Implements hook_block_view().
+ * @params array ($delta)
+ *  $delta será un arreglo con machine name
+ *  del module dentro del CMS
+ */
+function structureServices_block_view($delta = '') {
+  $block = [];
+
+  switch ($delta) {
+    case 'home_blog':
+        $block['content'] = structureBlocks_banner();
+      break;
+    /*
+    case 'home_example1':
+        $block['content'] = structureBlocks_exaple1();
+      break;
+    case 'home_example2':
+        $block['content'] = structureBlocks_exaple2();
+      break;
+    case 'home_example3':
+        $block['content'] = structureBlocks_exaple3();
+      break;
+    */
+  }
+
+  return $block;
+}
+
+/*
+ * Asigna un .tpl especifico para el despliegue del bloque
+ * Implements hook_theme().
+ */
+function structureServices_theme() {
+  $theme = [];
+  $theme['home_blog'] = [ 'template' => 'templates/block-blog' ];
+  /*
+  $theme['home_example1'] = [ 'template' => 'templates/home_example1' ];
+  $theme['home_example2'] = [ 'template' => 'templates/home_example2' ];
+  $theme['home_example2'] = [ 'template' => 'templates/home_example3' ];
+  */
+  return $theme;
+}
+
+/**
+ * Callback para desplegar contenido en bloque [home_blog]
+ * @return theme array ($content)
+ * @see structureBlocks_block_view
+ */
+function structureServices_banner() {
+  $content = [];
+
+  $qry = db_select('node', 'n');
+  $qry->leftJoin('field_data_body', 'body', 'body.entity_id = n.nid');
+  $qry->leftJoin('field_data_field_imgblog', 'img', 'img.entity_id = n.nid');
+  $qry->condition('n.type', 'blog_content');
+  $qry->condition('n.status', 1);
+  $qry->fields('n', ['nid', 'title'])
+      ->fields('body', ['body_value'])
+      ->fields('img', ['field_imgblog_fid']);
+  $qry->orderBy('n.changed', 'ASC');
+  $results = $qry->execute()->fetchAll();
+
+  if ( !empty($results) ) {
+    // Se recorre arreglo con resultados de la consulta
+    foreach ($results as $node) {
+      // Se ordena array con el contenido
+      $content[$node->nid] = [
+        'title' => $node->title,
+        'desc'  => $node->body_value,
+        'img'   => structureBlock_getimg($node->field_imgblog_fid),
+      ];
+    } // endforeach
+  }// endif
+
+  return theme('home_blog', array('content' => $content));
+}

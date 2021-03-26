@@ -1,11 +1,19 @@
 <?php
 /**
- * @file Hook Block
+ * @file Estructura de Servicio
  * @author Miguel Martínez <miguel01amd@gmail.com>
  * @package Estructuras | Drupal 7
- * @info Este module muestra la estructura básica para consultar nodos previamente intalados
+ * @info Este module muestra la estructura básica de un consumo de servicio
  * @vertion dev 1.0.0.0
  */
+
+/**
+ * ESTE MÓDULO NECESITA DE LA INSTALACIÓN PREVIA DE
+ * MODULO "SERVICES 3.x" Y SU CONFIGURACIÓN
+ */
+
+ // Se carga la libreria para acceder a sus métodos
+ module_load_include('inc', 'structureServices', 'structureServices.services');
 
 /**
  * Define los permisos para visualizar el contenido
@@ -17,6 +25,9 @@ function structureServices_permission() {
   return array(
     'estructuras d7' => array(
       'title' => 'Permiso general para acceso a contenido',
+    ),
+    'estructuras serv' => array(
+        'title' => 'Permiso para consumir el servicio',
     ),
   );
 }
@@ -78,11 +89,13 @@ function structureServices_block_info() {
  *  del module dentro del CMS
  */
 function structureServices_block_view($delta = '') {
-  $block = [];
+  $block = $content = [];
 
   switch ($delta) {
     case 'home_blog':
-        $block['content'] = structureBlocks_banner();
+       // Se llama a la misma fución del servicio para la primer carga del contenido
+        $content = structureServices_servContent()->data;
+        $block['content'] = theme('home_blog', array('content' => $content));;
       break;
     /*
     case 'home_example1':
@@ -113,38 +126,4 @@ function structureServices_theme() {
   $theme['home_example2'] = [ 'template' => 'templates/home_example3' ];
   */
   return $theme;
-}
-
-/**
- * Callback para desplegar contenido en bloque [home_blog]
- * @return theme array ($content)
- * @see structureBlocks_block_view
- */
-function structureServices_banner() {
-  $content = [];
-
-  $qry = db_select('node', 'n');
-  $qry->leftJoin('field_data_body', 'body', 'body.entity_id = n.nid');
-  $qry->leftJoin('field_data_field_imgblog', 'img', 'img.entity_id = n.nid');
-  $qry->condition('n.type', 'blog_content');
-  $qry->condition('n.status', 1);
-  $qry->fields('n', ['nid', 'title'])
-      ->fields('body', ['body_value'])
-      ->fields('img', ['field_imgblog_fid']);
-  $qry->orderBy('n.changed', 'ASC');
-  $results = $qry->execute()->fetchAll();
-
-  if ( !empty($results) ) {
-    // Se recorre arreglo con resultados de la consulta
-    foreach ($results as $node) {
-      // Se ordena array con el contenido
-      $content[$node->nid] = [
-        'title' => $node->title,
-        'desc'  => $node->body_value,
-        'img'   => structureBlock_getimg($node->field_imgblog_fid),
-      ];
-    } // endforeach
-  }// endif
-
-  return theme('home_blog', array('content' => $content));
 }

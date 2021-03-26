@@ -1,5 +1,10 @@
 <?php
 /**
+ * ESTE MÓDULO NECESITA DE LA INSTALACIÓN PREVIA DE
+ * MODULO "SERVICES 3.x" Y SU CONFIGURACIÓN
+ */
+
+/**
  * Instalador de tipos de contenido y sus instancias
  * Implements hook_install().
  * @contenttypes

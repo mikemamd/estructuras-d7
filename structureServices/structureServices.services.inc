@@ -1,150 +1,141 @@
 <?php
 /**
- * @file Hook Block
+ * @File Libreria de Servicios
  * @author Miguel Martínez <miguel01amd@gmail.com>
- * @package Estructuras | Drupal 7
- * @info Este module muestra la estructura básica para consultar nodos previamente intalados
+ * @package BUPA - Redesign V2
+ * @info Este módulo contiene la estrucutra básica para un consumo de servicios
  * @vertion dev 1.0.0.0
  */
 
 /**
- * Define los permisos para visualizar el contenido
- * Estos permisos deberán ser activados en /admin/people/permissions
- * Implements hook_permission().
- * @return array (permisions)
+ * ESTE MÓDULO NECESITA DE LA INSTALACIÓN PREVIA DE
+ * MODULO "SERVICES 3.x" Y SU CONFIGURACIÓN
  */
-function structureServices_permission() {
-  return array(
-    'estructuras d7' => array(
-      'title' => 'Permiso general para acceso a contenido',
-    ),
-  );
-}
 
-/**
- * Declara las URLS para que Drupal las indexe
- * Implements hook_menu().
- * @return array (paths)
- */
-function structureServices_menu() {
-  $items = [];
-
-  /* Se genera una URL base y/o rutas especificas */
-  $items['estructuras-d7'] = array(
-    'title'            => 'Estructuras Drupal 7',
-    'description'      => 'Página principal de Estructuras D7',
-    'page callback'    => 'structureBlocks_page_empty',
-    'access arguments' => array('estructuras d7'),
-  );
-
-  return $items;
-}
-
-/**
- * Callback de función para página en blanco
- * Puede sustituirese o implementarse otro método/hook
- * @return ($foo)
- * @see structureBlocks_menu()
-*/
-function structureServices_page_empty() {
-  return '';
-}
-
-/**
- * Activa los bloques y los indexa en drupal
- * Implements hook_block_info().
- * @blocks
- *   home_header
- */
-function structureServices_block_info() {
-  $blocks = [];
-  $blocks['home_blog'] = array(
-    'info'       => 'Home | Header', // Título del bloque en CMS
-    'status'     => TRUE,
-    'region'     => 'content', // Región de Drupal donde se mostrará
-    'cache'      => DRUPAL_NO_CACHE,
-    'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages'      => 'estructuras-d7', // Se puede hacer uso de wildcard (/%)
-    'weight'     => 2, // Posición en que se mostrará
-  );
-
-  return $blocks;
-}
-
-/*
- * Implements hook_block_view().
- * @params array ($delta)
- *  $delta será un arreglo con machine name
- *  del module dentro del CMS
- */
-function structureServices_block_view($delta = '') {
-  $block = [];
-
-  switch ($delta) {
-    case 'home_blog':
-        $block['content'] = structureBlocks_banner();
-      break;
-    /*
-    case 'home_example1':
-        $block['content'] = structureBlocks_exaple1();
-      break;
-    case 'home_example2':
-        $block['content'] = structureBlocks_exaple2();
-      break;
-    case 'home_example3':
-        $block['content'] = structureBlocks_exaple3();
-      break;
-    */
-  }
-
-  return $block;
-}
-
-/*
- * Asigna un .tpl especifico para el despliegue del bloque
- * Implements hook_theme().
- */
-function structureServices_theme() {
-  $theme = [];
-  $theme['home_blog'] = [ 'template' => 'templates/block-blog' ];
-  /*
-  $theme['home_example1'] = [ 'template' => 'templates/home_example1' ];
-  $theme['home_example2'] = [ 'template' => 'templates/home_example2' ];
-  $theme['home_example2'] = [ 'template' => 'templates/home_example3' ];
+ /**
+  * Función para declarar el servicio
+  * Implement hook_services_resources().
+  * @see module Services
   */
-  return $theme;
-}
+ function structureServices_services_resources(){
+   $resource = array(
+     'articles' => array(
+       'operations' => array(
+         'index' => array(
+           'help'             => 'Listado y filtrado de Artículos',
+           'callback'         => 'structureServices_servContent',
+           'access callback'  => 'structureServices_permission',
+           'access arguments' => array('estructuras serv'),
+           'access arguments append' => TRUE,
+           'args' => array(
+             array(
+               'name'        => 'filters',
+               'type'        => 'array',
+               'description' => '',
+               'source'      => array('param' => 'filters'),
+               'optional'    => TRUE,
+               'default'     => [],
+             ),
+             array(
+               'name'        => 'page',
+               'type'        => 'int',
+               'description' => '',
+               'source'      => array('param' => 'page'),
+               'optional'    => TRUE,
+               'default'     => 1,
+             ),
+           ),
+         ), // end index
+       ), // end operations
+     ), // end latest
+   );
 
-/**
- * Callback para desplegar contenido en bloque [home_blog]
- * @return theme array ($content)
- * @see structureBlocks_block_view
- */
-function structureServices_banner() {
-  $content = [];
+   return $resource;
+ }
 
-  $qry = db_select('node', 'n');
-  $qry->leftJoin('field_data_body', 'body', 'body.entity_id = n.nid');
-  $qry->leftJoin('field_data_field_imgblog', 'img', 'img.entity_id = n.nid');
-  $qry->condition('n.type', 'blog_content');
-  $qry->condition('n.status', 1);
-  $qry->fields('n', ['nid', 'title'])
-      ->fields('body', ['body_value'])
-      ->fields('img', ['field_imgblog_fid']);
-  $qry->orderBy('n.changed', 'ASC');
-  $results = $qry->execute()->fetchAll();
+ /**
+  * Se validan los parametros para recibir solo enteros
+  * @see structureServices_servContent
+  * @param array ($filters)
+  * @return boolean ($validate)
+  */
+ function structureServices_validate($filters) {
+   $success = TRUE;
 
-  if ( !empty($results) ) {
-    // Se recorre arreglo con resultados de la consulta
-    foreach ($results as $node) {
-      // Se ordena array con el contenido
-      $content[$node->nid] = [
-        'title' => $node->title,
-        'desc'  => $node->body_value,
-        'img'   => structureBlock_getimg($node->field_imgblog_fid),
-      ];
-    } // endforeach
-  }// endif
+   if ( $filters === NULL ) {
+     return $success;
+   } // endif
 
-  return theme('home_blog', array('content' => $content));
-}
+   foreach ($filters[0] as $param => $filter) {
+     foreach ($filter as $value) {
+       if ( !is_numeric($value) ) {
+         $success = FALSE;
+         return $success;
+       } // endif
+     }// endforeach
+
+   }// endforeach
+
+   return $success;
+ }
+
+ /**
+  * Callback para retornar contnido del servicio
+  * @see structureServices_services_resources, structureServices_block_view
+  * @param array ($filters) params on service request
+  * @return object ($response) data to content of call
+  */
+ function structureServices_servContent($filters = NULL) {
+   $content  = $results = [];
+   $response = new stdClass();
+
+   // Se decodifican los parametros en el JSON devuelto
+   $filters = json_decode($filters[0], true);
+
+   // Se validan filtros
+   $validate = structureServices_validate($filters);
+
+   // Se ejecutan operaciones necesarias en caso de pasar la validación
+   if ($validate === TRUE) {
+     /*
+     $qry = db_select('node', 'n');
+     $qry->leftJoin('field_data_body', 'body', 'body.entity_id = n.nid');
+     $qry->leftJoin('field_data_field_imgblog', 'img', 'img.entity_id = n.nid');
+     $qry->condition('n.type', 'blog_content');
+     $qry->condition('n.status', 1);
+     $qry->fields('n', ['nid', 'title'])
+         ->fields('body', ['body_value'])
+         ->fields('img', ['field_imgblog_fid']);
+     $qry->orderBy('n.changed', 'ASC');
+     $results = $qry->execute()->fetchAll();
+     */
+
+     if ( !empty($results)) {
+       /*
+       // Se recorre arreglo con resultados de la consulta
+       foreach ($results as $node) {
+         // Se ordena array con el contenido
+         $content[$node->nid] = [
+           'title' => $node->title,
+           'desc'  => $node->body_value,
+           'img'   => structureBlock_getimg($node->field_imgblog_fid),
+         ];
+       } // endforeach
+       */
+
+       $response->filters = json_encode($filters);
+       $response->success = TRUE;
+       $response->message = "success";
+       $response->data    = $content;
+
+
+     } else {
+         $response->success = TRUE;
+         $response->message = "error";
+         $response->data    = [];
+     }// endif
+
+   } //endif
+
+   return $response;
+ }

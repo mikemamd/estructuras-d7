@@ -1,12 +1,11 @@
 <?php
 /**
- * @file Hook Block
+ * @file Estructura Común
  * @author Miguel Martínez <miguel01amd@gmail.com>
  * @package Estructuras | Drupal 7
- * @info Este module muestra la estructura básica para consultar nodos previamente intalados
+ * @info Este module contiene funciones recurrentes para ser usadas en el contexto global
  * @vertion dev 1.0.0.0
  */
-
 
 /**
  * Construye la URL de la imagen
@@ -23,4 +22,78 @@ function structureCommon_getimg($fid = NULL) {
   } // end if
 
   return $url;
+}
+
+/**
+ * Cambia el status a permanente de los archivos temporales
+ * @param array $files
+ *   $files['module'] => String con el nombre del module
+ *   $files['files']  => Array con los nombres de las variables temporales
+ * @return boolean
+ */
+function structureCommon_permanentFile($files) {
+  $status = FALSE;
+
+  try {
+    foreach ($admin['files'] as $file) {
+      $fid = variable_get($file, '');
+      if (isset($fid) && !empty($fid)) {
+        $file = file_load($fid);
+        if ($file->status == 0) {
+          $file->status = FILE_STATUS_PERMANENT;
+          file_save($file);
+          file_usage_add($file, $admin['module'], $admin['module'], 1);
+        }//end if
+      }//end if
+    }//end foreach
+    $status = TRUE;
+  } catch ( Exception $e){
+    $error = $e->getMessage;
+    watchdog('Admin Permanent Files ', 'Error message :%message', array('%message' => $error) );
+  }//end try
+
+  return $status;
+}
+
+/**
+ * Retorna el Vocabulary ID vía machine name de la taxonomia
+ * @param string ($vocabulary_name)
+ *   String con el machine name de la taxonomia
+ * @return int ($vid)
+ *   Vocabulario ID (vid) de la taxonomia econtrada
+ */
+function structureCommon_vocabularyID($vocabulary_name = '') {
+    $vid = NULL;
+    if (empty($vocabulary_name)) {
+        return $vid;
+    } // end if
+
+    try {
+        $vid = db_select('taxonomy_vocabulary', 'tv')
+            ->fields('tv', array('vid'))
+            ->condition('tv.machine_name', $vocabulary_name, '=')
+            ->execute()->fetchField();
+    } catch (Exception $e) {
+    } // end try - catch
+
+    return $vid;
+}
+
+/**
+ * Retorna el nodo ID vía alías del nodo
+ * @param string ($alias)
+ *   String con el alias del nodo
+ * @return int ($node)
+ *   Nodo ID (nid) del nodo encontrado
+ */
+
+function structureCommon_get_nid_by_alias($alias) {
+    if (empty($alias)) {
+        return;
+    } // end if
+
+    $path = drupal_lookup_path("source", $alias);
+    $node = menu_get_object("node", 1, $path);
+
+    return $node;
 }

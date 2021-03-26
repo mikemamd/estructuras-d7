@@ -1,0 +1,26 @@
+<?php
+/**
+ * @file Hook Block
+ * @author Miguel Martínez <miguel01amd@gmail.com>
+ * @package Estructuras | Drupal 7
+ * @info Este module muestra la estructura básica para consultar nodos previamente intalados
+ * @vertion dev 1.0.0.0
+ */
+
+
+/**
+ * Construye la URL de la imagen
+ * @param null $fid (fid de la imagen)
+ * @return string ($ulr)
+ */
+function structureCommon_getimg($fid = NULL) {
+  $url = '';
+  if ($fid) {
+    // Get url from image
+    $file = file_load($fid);
+    $uri  = $file->uri;
+    $url  = file_create_url($uri);
+  } // end if
+
+  return $url;
+}

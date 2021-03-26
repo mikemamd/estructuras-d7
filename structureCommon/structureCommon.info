@@ -1,0 +1,5 @@
+name = Modulo Common.
+description = Módulo base para funciones recurrentes.
+package = 'Estructuras | Drupal 7'
+version = 1.0.0.0
+core = 7.x
